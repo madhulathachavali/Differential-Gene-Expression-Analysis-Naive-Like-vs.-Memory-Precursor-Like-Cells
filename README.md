@@ -1,4 +1,4 @@
-# Single-Cell RNA-seq Analysis Pipeline
+# Single-Cell RNA-seq Analysis
 
 
 ## 1. **Loading and Preprocessing**
