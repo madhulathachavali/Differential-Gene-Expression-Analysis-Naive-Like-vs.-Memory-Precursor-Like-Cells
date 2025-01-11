@@ -21,7 +21,7 @@ The goal of this analysis is to identify differentially expressed genes between 
 - Generated MDS plot to visualize sample clustering and group separation.
 
 #### **MDS Plot**:
-![MDS Plot](path/to/mds_plot.png)
+<img width="461" alt="image" src="https://github.com/user-attachments/assets/7fcae73d-e64b-4209-add1-d1d7ca7bebec" />
 
 **Interpretation**: Samples cluster according to their cell types, indicating distinct expression profiles for Naive-Like and Memory Precursor-Like cells.
 
@@ -33,9 +33,14 @@ The goal of this analysis is to identify differentially expressed genes between 
 - Fitted a linear model using `lmFit`.  
 - Defined contrasts to compare Naive-Like vs. Memory Precursor-Like cells.  
 - Used `eBayes` to calculate log fold changes and adjusted p-values.
+  
+#### **voom transformation**:
+<img width="449" alt="image" src="https://github.com/user-attachments/assets/596acc2e-13e6-4be7-82ed-edbe0c0061a8" />
+
 
 #### **Volcano Plot**:
-![Volcano Plot](path/to/volcano_plot.png)
+<img width="465" alt="image" src="https://github.com/user-attachments/assets/3348d8de-7c86-4401-bcab-2f06b76f32ac" />
+
 
 **Interpretation**:
 - Significant genes (highlighted) show substantial differential expression.  
@@ -49,7 +54,8 @@ The goal of this analysis is to identify differentially expressed genes between 
 - Generated a heatmap of top differentially expressed genes to visualize expression patterns across samples.
 
 #### **Heatmap**:
-![Heatmap](path/to/heatmap.png)
+<img width="470" alt="image" src="https://github.com/user-attachments/assets/b4bf04b7-22b2-4e2b-bc72-c847eaa3930e" />
+
 
 **Interpretation**:
 - Genes cluster into distinct groups, highlighting differences in expression between the two cell types.  
