@@ -1,39 +1,44 @@
 # Single-Cell RNA-seq Analysis
 
+1. Read Data:
+Command: d0 <- DGEList(counts)
+Purpose: Create a DGEList object to store raw counts and sample information, the required input format for differential expression analysis.
+Command: anno <- read.delim("annotation.txt"); metadata <- read.csv("metadata_for_course.csv")
+Purpose: Load annotation and metadata files, which include gene annotations and sample group information needed for analysis.
 
-## 1. **Loading and Preprocessing**
-- **Loading Data**: Raw count data for both `hPSC organoids` and `hPSC fetal lung cells` were loaded as `AnnData` objects.
-- **Removing Duplicates**: Duplicate cells were removed using `scv.pp.remove_duplicate_cells()`.
-- **Filtering Genes**: Genes expressed in fewer than 30 cells were filtered out using `sc.pp.filter_genes()`.
-- **Normalization and Log Transformation**: Data was normalized and log-transformed using `sc.pp.normalize_total()` and `sc.pp.log1p()`.
-- **Highly Variable Genes (HVG) Selection**: Highly variable genes were identified using `sc.pp.highly_variable_genes()`.
-
-## 2. **Dimensionality Reduction & Clustering**
-- **Principal Component Analysis (PCA)**: PCA was applied using `sc.pp.pca()` to reduce the dimensionality of the data.
-- **Neighbor Graph Construction**: A neighbor graph was constructed using `sc.pp.neighbors()` based on the first 30 principal components.
-- **Clustering**: The Louvain algorithm (`sc.tl.louvain()`) was applied to cluster the cells based on the neighbor graph.
-- **UMAP Visualization**: Uniform Manifold Approximation and Projection (UMAP) was applied using `sc.tl.umap()` to visualize the clusters.
-
-## 3. **Differential Expression (DEG) Analysis**
-- **Identifying DEGs**: Differentially expressed genes were identified between clusters using the `sc.tl.rank_genes_groups()` method with the Wilcoxon test.
-- **Saving DEG Results**: DEG results for both datasets were saved for further analysis.
-
-## 4. **Marker Gene Overlap**
-- **Reference Marker Genes**: A reference list of marker genes was loaded from an external file (`quach_degs`).
-- **Marker Gene Overlap**: The overlap between DEG results and reference marker genes was calculated using `sc.tl.marker_gene_overlap()`.
-
-## 5. **Heatmap Visualization**
-- **Overlap Heatmaps**: Heatmaps were generated to visualize the overlap coefficient between DEG results and reference markers for both datasets. These heatmaps were plotted using `seaborn.heatmap()`.
-
----
-
-## Requirements
-- `scanpy`
-- `scvelo`
-- `pandas`
-- `numpy`
-- `seaborn`
-- `matplotlib`
-
----
-
+2. Normalize Data:
+Command: d0 <- calcNormFactors(d0)
+Purpose: Normalize the counts to account for differences in library sizes between samples, ensuring fair comparison of gene expression.
+3. Filter Genes:
+Command: keep <- filterByExpr(d0, mm); sum(keep)
+Purpose: Remove genes with low expression across all samples that are unlikely to be informative, improving the statistical power of the analysis.
+4. Visualize Data with MDS Plot:
+Command: plotMDS(d, col = as.numeric(factor(metadata$simplified_cell_type)), cex = 1)
+Purpose: Check for sample clustering and variability between groups, ensuring that the groups of interest (e.g., naive-like vs. memory precursor-like) separate well.
+5. Model Design Matrix:
+Command: mm <- model.matrix(~0 + simplified_cell_type, data = metadata)
+Purpose: Create a design matrix that encodes group labels for comparison, specifying the experimental conditions.
+6. Transform Data (Voom):
+Command: y <- voom(d, mm, plot = T)
+Purpose: Apply the voom transformation to estimate mean-variance relationships, converting count data to log2 counts per million (logCPM) with appropriate weights for linear modeling.
+7. Fit Linear Model:
+Command: fit <- lmFit(y, mm)
+Purpose: Fit a linear model to the voom-transformed data, allowing estimation of group-specific expression levels for each gene.
+8. Set Contrasts:
+Command: contr <- makeContrasts(simplified_cell_typenaive_like - simplified_cell_typememory_precursor_like, levels = colnames(coef(fit)))
+Purpose: Define the specific contrast for comparison (e.g., naive-like vs. memory precursor-like), specifying the groups to compare.
+9. Estimate Contrasts:
+Command: tmp <- contrasts.fit(fit, contr); tmp <- eBayes(tmp)
+Purpose: Apply the contrast to estimate differential expression for each gene and use empirical Bayes shrinkage to stabilize variance estimates.
+10. Multiple Testing Adjustment:
+Command: top.table <- topTable(tmp, adjust.method = "BH", sort.by = "P", n = Inf)
+Purpose: Adjust p-values for multiple testing using the Benjamini-Hochberg method, controlling the false discovery rate (FDR).
+11. Merge Annotation:
+Command: Add gene annotations (e.g., names and descriptions) to the results table.
+Purpose: Link Ensembl gene IDs to meaningful gene names and descriptions for easier interpretation of results.
+12. Create Volcano Plot:
+Command: volcanoplot(fit2, ...)
+Purpose: Visualize the differential expression results, showing the relationship between fold changes and statistical significance.
+13. Create Heatmap:
+Command: heatmap.2(logcpm[rownames(top.table),], ...)
+Purpose: Visualize expression patterns of top genes across samples, showing clustering of genes and samples.
