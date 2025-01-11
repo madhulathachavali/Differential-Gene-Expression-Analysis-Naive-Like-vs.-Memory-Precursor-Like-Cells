@@ -1,44 +1,103 @@
-# Single-Cell RNA-seq Analysis
+# **Differential Gene Expression Analysis**
 
-1. Read Data:
-Command: d0 <- DGEList(counts)
-Purpose: Create a DGEList object to store raw counts and sample information, the required input format for differential expression analysis.
-Command: anno <- read.delim("annotation.txt"); metadata <- read.csv("metadata_for_course.csv")
-Purpose: Load annotation and metadata files, which include gene annotations and sample group information needed for analysis.
+## **Aim**
+The goal of this analysis is to identify differentially expressed genes between **Naive-Like** and **Memory Precursor-Like** cell types using RNA-seq data. 
 
-2. Normalize Data:
-Command: d0 <- calcNormFactors(d0)
-Purpose: Normalize the counts to account for differences in library sizes between samples, ensuring fair comparison of gene expression.
-3. Filter Genes:
-Command: keep <- filterByExpr(d0, mm); sum(keep)
-Purpose: Remove genes with low expression across all samples that are unlikely to be informative, improving the statistical power of the analysis.
-4. Visualize Data with MDS Plot:
-Command: plotMDS(d, col = as.numeric(factor(metadata$simplified_cell_type)), cex = 1)
-Purpose: Check for sample clustering and variability between groups, ensuring that the groups of interest (e.g., naive-like vs. memory precursor-like) separate well.
-5. Model Design Matrix:
-Command: mm <- model.matrix(~0 + simplified_cell_type, data = metadata)
-Purpose: Create a design matrix that encodes group labels for comparison, specifying the experimental conditions.
-6. Transform Data (Voom):
-Command: y <- voom(d, mm, plot = T)
-Purpose: Apply the voom transformation to estimate mean-variance relationships, converting count data to log2 counts per million (logCPM) with appropriate weights for linear modeling.
-7. Fit Linear Model:
-Command: fit <- lmFit(y, mm)
-Purpose: Fit a linear model to the voom-transformed data, allowing estimation of group-specific expression levels for each gene.
-8. Set Contrasts:
-Command: contr <- makeContrasts(simplified_cell_typenaive_like - simplified_cell_typememory_precursor_like, levels = colnames(coef(fit)))
-Purpose: Define the specific contrast for comparison (e.g., naive-like vs. memory precursor-like), specifying the groups to compare.
-9. Estimate Contrasts:
-Command: tmp <- contrasts.fit(fit, contr); tmp <- eBayes(tmp)
-Purpose: Apply the contrast to estimate differential expression for each gene and use empirical Bayes shrinkage to stabilize variance estimates.
-10. Multiple Testing Adjustment:
-Command: top.table <- topTable(tmp, adjust.method = "BH", sort.by = "P", n = Inf)
-Purpose: Adjust p-values for multiple testing using the Benjamini-Hochberg method, controlling the false discovery rate (FDR).
-11. Merge Annotation:
-Command: Add gene annotations (e.g., names and descriptions) to the results table.
-Purpose: Link Ensembl gene IDs to meaningful gene names and descriptions for easier interpretation of results.
-12. Create Volcano Plot:
-Command: volcanoplot(fit2, ...)
-Purpose: Visualize the differential expression results, showing the relationship between fold changes and statistical significance.
-13. Create Heatmap:
-Command: heatmap.2(logcpm[rownames(top.table),], ...)
-Purpose: Visualize expression patterns of top genes across samples, showing clustering of genes and samples.
+---
+
+## **Data Source**
+- **Publication**: [PMC6336113](https://pmc.ncbi.nlm.nih.gov/articles/PMC6336113/#S2)  
+- **Dataset**: RNA-seq count data from mouse samples, with metadata describing cell type classifications and gene annotations.
+- **Training Reference**: This analysis follows the  [UC Davis Bioinformatics Training](https://ucdavis-bioinformatics-training.github.io/2022-April-GGI-DE-in-R/data_analysis/R_code_for_quizzes).
+
+---
+
+## **Analysis Workflow**
+
+### **1. Data Preprocessing**
+- **Input**: Raw RNA-seq count data and metadata.  
+- Normalized the data to account for library size differences using `calcNormFactors`.  
+- Filtered lowly expressed genes using `filterByExpr` to improve statistical power.  
+- Generated MDS plot to visualize sample clustering and group separation.
+
+#### **MDS Plot**:
+![MDS Plot](path/to/mds_plot.png)
+
+**Interpretation**: Samples cluster according to their cell types, indicating distinct expression profiles for Naive-Like and Memory Precursor-Like cells.
+
+---
+
+### **2. Differential Expression Analysis**
+- Designed a model matrix to encode experimental groups.  
+- Applied `voom` transformation to stabilize variance and generate logCPM values.  
+- Fitted a linear model using `lmFit`.  
+- Defined contrasts to compare Naive-Like vs. Memory Precursor-Like cells.  
+- Used `eBayes` to calculate log fold changes and adjusted p-values.
+
+#### **Volcano Plot**:
+![Volcano Plot](path/to/volcano_plot.png)
+
+**Interpretation**:
+- Significant genes (highlighted) show substantial differential expression.  
+- Examples include:
+  - **Upregulated in Memory Precursor-Like**: `Tcf7`, `S1pr1`, `Irf1`.  
+  - **Upregulated in Naive-Like**: `Gzmk`, `Gzma`, `Pik3ap1`.
+
+---
+
+### **3. Visualization of Results**
+- Generated a heatmap of top differentially expressed genes to visualize expression patterns across samples.
+
+#### **Heatmap**:
+![Heatmap](path/to/heatmap.png)
+
+**Interpretation**:
+- Genes cluster into distinct groups, highlighting differences in expression between the two cell types.  
+- Sample clustering reflects group separation, validating the experimental design.
+
+---
+
+## **Key Results**
+- Identified **top differentially expressed genes**:
+  - **Naive-Like**: `Gzmk`, `Gzma`, `Pik3ap1`.  
+  - **Memory Precursor-Like**: `Tcf7`, `S1pr1`, `Irf1`.
+    
+- Visualizations highlight distinct gene expression patterns between groups.
+
+---
+
+## **Conclusion**
+This analysis demonstrates clear transcriptional differences between Naive-Like and Memory Precursor-Like cells. Genes such as `Tcf7` and `Gzmk` are strong candidates for further investigation as biomarkers or regulators of these states. 
+
+---
+
+### **Requirements**
+- **R packages**:
+  - `edgeR`  
+  - `limma`  
+  - `gplots`  
+  - `RColorBrewer`
+
+---
+
+## **References**
+- **Publication**: [PMC6336113](https://pmc.ncbi.nlm.nih.gov/articles/PMC6336113/#S2)  
+- **Tools and Libraries**:
+  - [edgeR](https://bioconductor.org/packages/release/bioc/html/edgeR.html)  
+  - [limma](https://bioconductor.org/packages/release/bioc/html/limma.html)
+
+---
+
+## **Acknowledgments**
+Special thanks to the authors of [PMC6336113](https://pmc.ncbi.nlm.nih.gov/articles/PMC6336113/#S2) for providing the data and resources and [UC Davis Bioinformatics Training](https://ucdavis-bioinformatics-training.github.io/2022-April-GGI-DE-in-R/data_analysis/R_code_for_quizzes).
+
+---
+
+
+
+
+
+
+
+
+
